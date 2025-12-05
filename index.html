@@ -1,0 +1,30 @@
+
+<!doctype html> <html lang="en"> <head> <meta charset="utf-8"> <title>Training Plan</title> <meta name="viewport" content="width=device-width, initial-scale=1"> <meta name="theme-color" content="#111"> <link rel="manifest" href="manifest.json"> <link rel="stylesheet" href="style.css"> <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script> </head> <body> <header> <h1>Training Plan Calendar</h1> <div class="topbar"> <div class="ftp-card"> <div>Current FTP: <strong id="ftpW">255 W</strong> (<strong id="ftpWkg">3.33 W/kg</strong>)</div> <div id="ftpDelta">Change vs last week: <span class="muted">n/a</span></div> <div class="inputs"> <label>FTP: <input id="ftpInput" type="number" step="1" value="255"></label> <label>Prev FTP: <input id="prevFtpInput" type="number" step="1" value="255"></label> <label>Weight (kg): <input id="weightInput" type="number" step="0.1" value="76.5"></label> <button id="updateFtpBtn">Update</button> </div> </div> <div class="controls"> <input type="file" id="csvInput" accept=".csv"> <button id="importCsvBtn">Import CSV</button> <button id="exportCsvBtn">Export CSV</button> <button id="exportIcsBtn">Export ICS (PST)</button> <button id="addEventBtn">Add Event</button> <button id="resetBtn">Reset (clear saved)</button> </div> </div> <div class="controls" style="margin-top:8px;"> <strong>Intervals.icu Import</strong> <label>Athlete ID: <input id="icuAthleteId" type="number" placeholder="123456"></label> <label>API Key: <input id="icuApiKey" type="text" placeholder="paste API key"></label> <label>Start: <input id="icuStart" type="date"></label> <label>End: <input id="icuEnd" type="date"></label> <button id="icuImportBtn">Import ICU</button> <small class="muted">Tip: Use your Personal API key from intervals.icu.</small> </div> </header> <main> <div id="calendar"></div> <aside id="sidebar"> <h2>Weekly Summary</h2> <div id="weeklySummary"></div> <h2>Projections (CTL/ATL/TSB)</h2> <div class="proj-controls"> <label>Initial CTL: <input id="initCtlInput" type="number" step="0.1" value="18"></label> <label>Initial ATL: <input id="initAtlInput" type="number" step="0.1" value="30"></label> <label>Start date: <input id="projStartDateInput" type="date"></label> <button id="recalcProjBtn">Recalculate</button> </div> <canvas id="projChart" height="200"></canvas> <div id="projNumbers" class="muted"></div> <h2>Event Details</h2> <div id="eventDetails">Click an event to edit.</div> </aside> </main> <footer> <small>PST timezone, offline-capable PWA. Drag-and-drop or resize events; duration/TSS auto-calculated if Auto TSS is on.</small> </footer> <script src="script.js"></script> <script> if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js'); }); } </script> </body> </html> EOF
+cat > style.css << 'EOF'
+:root { --bg:#111; --fg:#eee; --accent:#59c; --muted:#999; --card:#1a1a1a; --success:#2e8b57; --warning:#d19a30; --danger:#c35; }
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+header{padding:12px 16px;border-bottom:1px solid #222}
+h1{margin:0 0 8px;font-size:20px}
+.topbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+button,input[type=file],input[type=number],input[type=date],input[type=text]{background:var(--card);border:1px solid #333;color:var(--fg);padding:8px 10px;border-radius:6px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+main{display:grid;grid-template-columns:1fr 360px;gap:12px;padding:12px}
+#calendar{background:var(--card);border:1px solid #222;border-radius:8px;padding:8px}
+#sidebar{background:var(--card);border:1px solid #222;border-radius:8px;padding:12px}
+#weeklySummary div{padding:6px 0;border-bottom:1px dashed #333}
+.fc .fc-toolbar-title{color:var(--fg)}
+.fc .fc-button{background:#222;border:1px solid #333;color:var(--fg)}
+.fc .fc-daygrid-event-dot{border-color:var(--accent)}
+.event-completed{background:rgba(46,139,87,.15)!important;border-left:3px solid var(--success)!important}
+.event-rest{background:rgba(153,153,153,.1)!important;border-left:3px solid var(--muted)!important}
+.event-quality{border-left:3px solid var(--accent)!important}
+.event-vo2{border-left:3px solid var(--danger)!important}
+.event-threshold{border-left:3px solid #e68!important}
+.event-z2{border-left:3px solid #6c8!important}
+.event-recovery{border-left:3px solid #aaa!important}
+.ftp-card{background:var(--card);border:1px solid #222;border-radius:8px;padding:8px 12px;min-width:280px}
+.ftp-card .inputs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.muted{color:var(--muted);font-size:12px}
+.proj-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
